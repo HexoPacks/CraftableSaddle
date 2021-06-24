@@ -1,0 +1,12 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build",
+            "type": "shell",
+            "windows": {
+                "command": "Get-ChildItem -Path ${workspaceFolder}\\src\\* | Copy-Item -Force -Recurse -Destination '${workspaceFolder}\\build'"
+            }
+        }
+    ]
+}

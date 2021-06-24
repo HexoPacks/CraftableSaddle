@@ -1,0 +1,41 @@
+name: Publish
+
+on:
+  push:
+    tags:
+    - "v[0-9]+.[0-9]+.[0-9]+"
+    - "[0-9]+.[0-9]+.[0-9]+"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+
+    # Check out repository
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    # Define version number and filename
+    - name: Define environnement variables
+      run: |
+        echo "VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+        echo "FILENAME=${{github.event.repository.name}}-${GITHUB_REF#refs/*/}.zip" >> $GITHUB_ENV
+
+    # Create a version file to be added to the zip file
+    - name: Version file
+      run : echo "${{env.VERSION}}" > VERSION
+
+    # Create a zip file containing all necessary files
+    - name: Zip files
+      run: |
+        (cd src; zip -r ../"${{env.FILENAME}}" .)
+        zip -r "${{env.FILENAME}}" VERSION LICENSE README.md
+
+    # Create a release and add the zip file to it
+    - name: Release
+      uses: docker://antonyurchenko/git-release:latest
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        ALLOW_EMPTY_CHANGELOG: true
+      with:
+        args: "${{env.FILENAME}}"
